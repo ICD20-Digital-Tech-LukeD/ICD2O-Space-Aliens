@@ -11,7 +11,7 @@ class TitleScene extends Phaser.Scene {
     // variables
     this.titleSceneBackgroundImage = null
     this.titleScenetext = null
-    this.titleSceneTextStyle = { font: '200px Times', fill: '#fde4b9', align: 'center' }
+    this.titleSceneTextStyle = { font: '200px Times', fill: '#000000', align: 'center' }
   }
   // sets the background color of the title scene
   init (data) {
@@ -20,12 +20,12 @@ class TitleScene extends Phaser.Scene {
   // prints Title Scene in the console
   preload () {
     console.log('Title Scene')
-    this.load.image('titleSceneBackground', 'assets/aliens_screen_image.jpg')
+    this.load.image('titleSceneBackground', 'assets/spaceTitle.png')
   }
   
   create (data) {
     //sets background of title screen
-    this.titleSceneBackgroundImage = this.add.sprite(0, 0, 'titleSceneBackground').setScale(2.75)
+    this.titleSceneBackgroundImage = this.add.sprite(0, 0, 'titleSceneBackground').setScale(1.5)
     this.titleSceneBackgroundImage.x = 1920 / 2
     this.titleSceneBackgroundImage.y = 1080 / 2
     // sets text of title screen
@@ -33,8 +33,8 @@ class TitleScene extends Phaser.Scene {
   }
 
   update (time, delta){
-    //when the run time hits 7 seconds switch to menu scene
-  if (time > 7000) {
+    //when the run time hits 5 seconds switch to menu scene
+  if (time > 5000) {
     this.scene.switch('menuScene')
     }
   }

@@ -12,8 +12,8 @@ class GameScene extends Phaser.Scene {
     let alienXVelocity = Math.floor(Math.random() * 50) + 1 // gets a number between 1 and 50
     alienXVelocity *= Math.round(Math.random()) ? 1 : -1 // 50% chance of getting a positive or negative value
     const anAlien = this.physics.add.sprite(alienXLocation, 100, 'alien') 
-    anAlien.body.velocity.y = 200
-    anAlien.body.velocity.x = alienXVelocity
+    anAlien.yVel = 3
+    //anAlien.velocity.x = alienXVelocity
     this.alienGroup.add(anAlien)
   }
   constructor() {
@@ -25,9 +25,13 @@ class GameScene extends Phaser.Scene {
     this.fireMissle = false
     this.score = 0
     this.scoreText = null
-    this.scoreTextStyle = { font: '65px Arial', fill: '#ffffff', align: 'center'  }
+    this.scoreTextStyle = { font: '65px ', fill: '#ffffff', align: 'center'  }
     this.gameOverText = null
-    this.gameOverTextStyle = { font: '65px Arial', fill: '#ff0000', align: 'center' }
+    this.gameOverTextStyle = { font: '65px ', fill: '#ff0000', align: 'center' }
+    this.audio = new Audio("./assets/spaceFight.mp3") 
+    this.explosion = new Audio("./assets/bomb.wav")
+    this.loss = new Audio("./assets/gameLoss.mp3")
+    this.shipAlive = true
   }
   // sets the background color of the title scene
   init(data) {
@@ -38,7 +42,7 @@ class GameScene extends Phaser.Scene {
     console.log('Game Scene')
 
     // images
-    this.load.image('starBackground', 'assets/starBackground.png')
+    this.load.image('starBackground', 'assets/starBackground.jpg')
     this.load.image('ship', 'assets/spaceShip.png')
     this.load.image('missle', 'assets/missile.png')
     this.load.image('alien', 'assets/alien.png')
@@ -46,12 +50,27 @@ class GameScene extends Phaser.Scene {
     this.load.audio('laser', 'assets/laser1.wav')
     this.load.audio('explosion', 'assets/barrelExploding.wav')
     this.load.audio('bomb', 'assets/bomb.wav')
+    this.load.audio('spaceFight', 'assets/spaceFight.mp3')
   }
 
   create(data) {
+    this.shipAlive = true
+    this.audio.loop = true;
+    this.audio.volume = 0.5;
+    this.audio.play();
+    this.explosion.pause();
+    this.explosion.volume = 0.2;
+    this.explosion.loop = false;
+    this.explosion.currentTime = 0;
+    this.loss.pause();
+    this.loss.currentTime = 0;
+    
+    
     // makes the background
-    this.background = this.add.image(0, 0, 'starBackground').setScale(2.0)
-    this.background.setOrigin(0, 0)
+    this.background = this.add.image(0, 0, 'starBackground')
+    //this.background.setOrigin(0, 0)
+    this.background.x = 1920 / 2
+    this.background.y = 1080 / 2
 
     this.scoreText = this.add.text(10, 10, 'Score: ' + this.score.toString(), this.scoreTextStyle)
     
@@ -74,15 +93,24 @@ class GameScene extends Phaser.Scene {
       this.createAlien()
       this.createAlien()
     }.bind(this))
-
+    
+    //collision between aliens and the ship
     this.physics.add.collider(this.ship, this.alienGroup, function (shipCollide, alienCollide) {
-      this.sound.play('bomb')
       this.physics.pause()
       alienCollide.destroy()
       shipCollide.destroy()
       this.gameOverText = this.add.text(1920 / 2, 1080 / 2, 'Game Over!\nClick to play again.', this.gameOverTextStyle).setOrigin(0.5)
       this.gameOverText.setInteractive({ useHandCursor: true })
       this.gameOverText.on('pointerdown', () => this.scene.start('gameScene'))
+      this.explosion.play();
+      this.audio.pause();
+      this.audio.currentTime = 0;
+      this.score = 0
+      this.loss.play();
+      this.loss.volume = 1;
+      this.loss.loop = true;
+      this.shipAlive = false;
+      
     }.bind(this))
   }
     
@@ -118,7 +146,7 @@ class GameScene extends Phaser.Scene {
     this.ship.x = this.ship.x+this.xvel
     this.ship.rotation = Phaser.Math.DegToRad(this.xvel * 2)
     //checks if the spacebar is being pressed
-    if (keySpaceObj.isDown == true) {
+    if (keySpaceObj.isDown == true && this.shipAlive == true ) {
       if (this.fireMissle == false) {
         // fires missle
         this.fireMissle = true
@@ -128,15 +156,28 @@ class GameScene extends Phaser.Scene {
         this.sound.play('laser')
       }
     }
+    // sets fire missle to false if the spacebar is not being pressed
     if (keySpaceObj.isUp === true) {
       this.fireMissle = false
     }
+    // moves the missle and destroys it when it hits the border
     this.missleGroup.children.each(function (item){
       item.y = item.y - 15
       if (item.y < 0) {
         item.destroy()
-      }
+      } 
     })
+    this.alienGroup.children.each(function (item){
+        if (!this.shipAlive) {
+            item.yVel = 0; // Stop all alien movement
+        } else {
+            item.y += item.yVel; // Move aliens if ship is alive
+            if (item.y > 1080) {
+                item.y = 0;
+                item.x = Phaser.Math.Between(0, 1920);
+            }
+        }
+    }, this); // Pass 'this' as the context to refer to the GameScene instance
   }
 }
 

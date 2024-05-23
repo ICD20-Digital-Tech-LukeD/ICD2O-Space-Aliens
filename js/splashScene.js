@@ -18,24 +18,25 @@ class SplashScene extends Phaser.Scene {
   // this function puts Splash Scene into the console and loads the splash scene image into a key to be used later
   preload() {
     console.log('Splash Scene')
-    this.load.video('splashSceneBackground', './assets/IMHSplashScene.mp4')
+    this.load.image('splashSceneBackground', './assets/IMHSplashScene.jpg')
   }
 
   create(data) {
     // this is for my splash scene picture and to make it centered in the middle
-    this.splashSceneBackgroundImage = this.add.video(0, 0, 'splashSceneBackground')
-    this.splashSceneBackgroundImage.play(false);
+    // Create the video object
+    this.splashSceneImage = this.add.sprite(0, 0, 'splashSceneBackground');
     // screen dimensions for x 
-    this.splashSceneBackgroundImage.x = 1920 / 2
+    this.splashSceneImage.x = 1920 / 2
     // screen dimensions on y 
-    this.splashSceneBackgroundImage.y = 1080 / 2
+    this.splashSceneImage.y = 1080 / 2
   }
   // when the game updates every few hundred miliseconds it runs this function
   update(time, delta) {
-    if (time > 4850) {
+    if (time > 3000) {
       this.scene.switch('titleScene')
     }
   }
 }
 
 export default SplashScene
+
